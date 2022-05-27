@@ -13,7 +13,7 @@ from webdriver_manager.firefox import GeckoDriverManager
 def scrapeAll():
   # Set up splinter
   executable_path = {'executable_path': GeckoDriverManager().install()}
-  browser = Browser('firefox', **executable_path, headless=False)
+  browser = Browser('firefox', **executable_path, headless=True)
 
   news_title, news_paragraph = marsNews(browser)
 
@@ -23,6 +23,7 @@ def scrapeAll():
     "news_paragraph": news_paragraph,
     "featured_image": featuredImage(browser),
     "facts": marsFacts(),
+    "hemispheres": marsHemispheres(browser),
     "last_modified": dt.datetime.now()
   }
 
@@ -103,6 +104,39 @@ def marsFacts():
   # Convert DF to html-ready code
   return df.to_html(classes="table table-striped")
 # ----------------------------------------
+
+# Mars Hemispheres
+# ----------------------------------------
+def marsHemispheres(browser):
+  url = 'https://marshemispheres.com/'
+  browser.visit(url)
+
+  # Create a list to hold the images and titles.
+  hemisphere_image_urls = []
+
+  # Write code to retrieve the image urls and titles for each hemisphere.
+  for i in range(0, 4):
+    hemispheres = {}
+
+    img_link = browser.find_by_tag('h3')[i].click()
+
+    html = browser.html
+    img_soup = soup(html, 'html.parser')
+
+    img_title = img_soup.find('h2', class_='title').text
+
+    img_li = img_soup.find('li')
+    img_link = img_li.find('a')['href']
+
+    full_url = f'{url}{img_link}'
+
+    hemispheres['img_url'] = full_url
+    hemispheres['title'] = img_title
+    hemisphere_image_urls.append(hemispheres)
+
+    browser.back()
+
+  return hemisphere_image_urls
 
 
 # Main method
